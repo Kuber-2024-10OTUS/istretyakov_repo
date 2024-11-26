@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: homework-pod
+  namespace: homework
+spec:
+  volumes:
+  - name: homework-volume
+    emptyDir: {}
+
+  initContainers:
+  - name: init-web-content
+    image: busybox
+    command: ['sh', '-c', 'echo "<h1>Hello, Homework!</h1>" > /init/index.html']
+    volumeMounts:
+    - name: homework-volume
+      mountPath: /init
+
+  containers:
+  - name: web-server
+    image: nginx
+    ports:
+    - containerPort: 8000
+    volumeMounts:
+    - name: homework-volume
+      mountPath: /homework
+    command: ["/bin/sh", "-c"]
+    args: [
+      "cp /homework/index.html /usr/share/nginx/html/index.html && \
+      echo 'server { listen 8000; location / { root /usr/share/nginx/html; index index.html; } }' > /etc/nginx/conf.d/default.conf && \
+      nginx -g 'daemon off;'"
+    ]
+    lifecycle:
+      preStop:
+        exec:
+          command: ["/bin/sh", "-c", "rm -f /homework/index.html"]
