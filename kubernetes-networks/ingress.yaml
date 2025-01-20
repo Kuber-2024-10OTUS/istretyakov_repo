@@ -4,14 +4,15 @@ metadata:
   name: homework-ingress
   namespace: homework
   annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/rewrite-target: /index.html
 spec:
   rules:
   - host: homework.otus
     http:
       paths:
-      - path: /homepage
-        pathType: Exact
+      - path: /homepage$
+        pathType: ImplementationSpecific
         backend:
           service:
             name: homework-service
